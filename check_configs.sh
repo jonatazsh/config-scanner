@@ -1,5 +1,7 @@
 #!/bin/bash
 
+USER_AGENT="Docker-Config-Scanner"
+
 # Identifica se o input é uma URL ou um nome de usuário
 INPUT=${1}
 
@@ -49,7 +51,7 @@ check_repo() {
     
     # Busca arquivos na raiz do repositório via API do GitHub
     local response=$(curl -s -H "Accept: application/vnd.github.v3+json" \
-                 -H "User-Agent: Gemini-CLI-Scanner" \
+                 -H "User-Agent: $USER_AGENT" \
                  "https://api.github.com/repos/$owner/$repo/contents/")
     
     # Verifica erro
