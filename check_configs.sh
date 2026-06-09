@@ -2,7 +2,7 @@
 
 USER_AGENT="Docker-Config-Scanner"
 
-# Identifica se o input é uma URL ou um nome de usuário
+# identifica se o input é uma URL ou um nome de usuário
 INPUT=${1}
 
 if [ -z "$INPUT" ]; then
@@ -10,17 +10,17 @@ if [ -z "$INPUT" ]; then
     exit 1
 fi
 
-# Função para buscar conteúdo e escanear por segredos e versões
+# função para buscar conteúdo e escanear por segredos e versões
 scan_file_content() {
     local owner=$1
     local repo=$2
     local file_path=$3
     local download_url=$4
 
-    # Download do conteúdo bruto (raw)
-    local content=$(curl -s -L -H "User-Agent: Gemini-CLI-Scanner" "$download_url")
+    # download do conteúdo bruto (raw)
+    local content=$(curl -s -L -H "User-Agent: $USER_AGENT" "$download_url")
     
-    # 1. Busca por SEGREDOS (Senhas, chaves, etc)
+    # 1. busca por segredos (senhas, chaves, etc)
     local secret_keywords="password|passwd|pwd|user|username|secret|key|token|auth|credentials|admin"
     local secret_matches=$(echo "$content" | grep -Ei "($secret_keywords).*[=:]" | sed 's/^[[:space:]]*//')
 
@@ -31,7 +31,7 @@ scan_file_content() {
         done
     fi
 
-    # 2. Busca por INFRA/VERSÕES (Imagens, versões de software, kernel)
+    # 2. busca por INFRA/VERSÕES (Imagens, versões de software, kernel)
     local infra_keywords="image|version|kernel|build|distro|os|runtime|platform|engine"
     local infra_matches=$(echo "$content" | grep -Ei "($infra_keywords).*[=:]|[a-z0-9_-]+:[0-9]+\.[0-9]+|[a-z0-9_-]+:[0-9]+" | sed 's/^[[:space:]]*//' | grep -vE "^#")
 
@@ -43,18 +43,18 @@ scan_file_content() {
     fi
 }
 
-# Função para checar um repositório específico
+# função para checar um repositório específico
 check_repo() {
     local owner=$1
     local repo=$2
     echo "Analisando repositório: $owner/$repo"
     
-    # Busca arquivos na raiz do repositório via API do GitHub
+    # busca arquivos na raiz do repositório via API do gitHub
     local response=$(curl -s -H "Accept: application/vnd.github.v3+json" \
                  -H "User-Agent: $USER_AGENT" \
                  "https://api.github.com/repos/$owner/$repo/contents/")
     
-    # Verifica erro
+    # verifica erro
     local error_msg=$(echo "$response" | jq -r 'if type=="object" then .message else empty end')
     if [ ! -z "$error_msg" ] && [ "$error_msg" != "null" ]; then
         echo "  [ ERRO ] Não foi possível acessar. Mensagem: $error_msg"
@@ -84,16 +84,16 @@ check_repo() {
     echo "--------------------------------------------------"
 }
 
-# Função para buscar repositórios de um usuário
+# função para buscar repositórios de um usuário
 check_user_repos() {
     local user=$1
     echo "Buscando repositórios públicos do usuário: $user"
     
     local repos_json=$(curl -s -H "Accept: application/vnd.github.v3+json" \
-                         -H "User-Agent: Gemini-CLI-Scanner" \
+                         -H "User-Agent: $USER_AGENT" \
                          "https://api.github.com/users/$user/repos?per_page=100")
 
-    # Verifica erro
+    # verifica erro
     local error_msg=$(echo "$repos_json" | jq -r 'if type=="object" then .message else empty end')
     if [ ! -z "$error_msg" ] && [ "$error_msg" != "null" ]; then
         echo "  [ ERRO ] Usuário não encontrado ou limite de API atingido. ($error_msg)"
@@ -114,7 +114,7 @@ check_user_repos() {
     done
 }
 
-# Lógica de detecção de input
+# lógica de detecção de input
 if [[ $INPUT =~ ^https?://github\.com/([^/]+)/([^/]+)/?$ ]]; then
     OWNER=${BASH_REMATCH[1]}
     REPO=${BASH_REMATCH[2]}
