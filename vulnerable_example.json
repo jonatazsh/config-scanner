@@ -1,0 +1,9 @@
+{
+  "api_key": "SG.xK1234567890EXAMPLE.token",
+  "db_user": "admin_db",
+  "db_password": "SuperSecretPassword!123",
+  "app_version": "1.0.4-beta",
+  "base_image": "python:3.8-slim",
+  "aws_access_key": "AKIAEXAMPLE123456789",
+  "secret_token": "d8e8fca2dc0f896fd7cb4cb0031ba249"
+}
